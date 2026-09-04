@@ -7,11 +7,28 @@ class Goal:
         self.category = category
 
     def __str__(self):
-        percent = self.current_balance / self.target_amount * 100
         return (
             f"{self.name}: {self.current_balance:.0f} из {self.target_amount:.0f} "
-            f"({percent:.1f}%) — {self.status}"
+            f"({self.get_progress():.1f}%) — {self.status}"
         )
+    
+    def get_progress(self):
+        if self.target_amount == 0:
+            return 0
+        return self.current_balance / self.target_amount * 100
+
+    def get_remaining(self):
+        return max(0, self.target_amount - self.current_balance)
+
+    def show_progress(self):
+        print(f"Цель: {self.name}")
+        print(f"Категория: {self.category}")
+        print(
+            f"Накоплено: {self.current_balance:.0f} из {self.target_amount:.0f}"
+        )
+        print(f"Прогресс: {self.get_progress():.1f}%")
+        print(f"Осталось: {self.get_remaining():.0f}")
+        print(f"Статус: {self.status}")
 
     def increase_balance(self, amount):
         if amount <= 0:
