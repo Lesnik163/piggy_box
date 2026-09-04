@@ -40,6 +40,21 @@ class Goal:
 
         self.status = new_status
 
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "target_amount": self.target_amount,
+            "current_balance": self.current_balance,
+            "category": self.category,
+            "status": self.status,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        goal = cls(data["name"], data["target_amount"], data["category"], data["status"])
+        goal.current_balance = data["current_balance"]
+        return goal
+
     def __str__(self):
         return (
             f"{self.name}: {self.current_balance:.0f} из {self.target_amount:.0f} "
