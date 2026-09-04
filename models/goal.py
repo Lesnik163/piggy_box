@@ -1,5 +1,5 @@
 from models.constants import STATUSES 
-
+from models.constants import MILESTONES
 class Goal:
     def __init__(self, name, target_amount, category, status="активна"):
         name = name.strip()
@@ -8,6 +8,7 @@ class Goal:
         self.name = name.capitalize()
         self.target_amount = target_amount
         self.current_balance = 0
+        self.last_notified_percent = 0
 
         category = category.strip()
         if not category:
@@ -47,12 +48,14 @@ class Goal:
             "current_balance": self.current_balance,
             "category": self.category,
             "status": self.status,
+            "last_notified_percent": self.last_notified_percent,
         }
 
     @classmethod
     def from_dict(cls, data):
         goal = cls(data["name"], data["target_amount"], data["category"], data["status"])
         goal.current_balance = data["current_balance"]
+        goal.last_notified_percent = data.get("last_notified_percent", 0)
         return goal
 
     def __str__(self):
@@ -97,16 +100,13 @@ class Goal:
         if self.current_balance >= self.target_amount:
             self.set_status("выполнена")
 
-    def decrease_balance(self, amount):
-        if amount <= 0:
-            raise ValueError("Сумма должна быть больше нуля.")
-
-        if self.current_balance < amount:
-            raise ValueError(
-                f"Текущий баланс меньше суммы для вычета. Текущий баланс: {self.current_balance:.0f}"
-            )
-
-        self.current_balance -= amount
-
-        if self.current_balance < self.target_amount and self.status == "выполнена":
-            self.set_status("активна")
+        return self.check_milestone()
+       
+    def check_milestone(self):
+        messages = []
+        persent = self.get_progress()
+        for milestone in MILESTONES:
+            if persent >= milestone and self.last_notified_percent < milestone:
+                messages.append(f"Цель {self.name} достигла {milestone}%")
+                self.last_notified_percent = milestone
+        return messages
